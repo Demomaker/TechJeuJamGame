@@ -3,6 +3,7 @@ using UnityEngine;
 public static class Finder 
 {
     private static OnWinEventChannel onWinEventChannel = null;
+    private static OnLossEventChannel onLossEventChannel = null;
     private static GameController gameController = null;
     private static ChatController chatController = null;
     public static OnWinEventChannel OnWinEventChannel 
@@ -12,6 +13,15 @@ public static class Finder
             if(onWinEventChannel == null)
                 onWinEventChannel = GameObject.FindObjectOfType<OnWinEventChannel>();
             return onWinEventChannel;
+        }
+    }
+    public static OnLossEventChannel OnLossEventChannel 
+    {
+        get
+        {
+            if(onLossEventChannel == null)
+                onLossEventChannel = GameObject.FindObjectOfType<OnLossEventChannel>();
+            return onLossEventChannel;
         }
     }
     public static GameController GameController 
@@ -37,4 +47,6 @@ public static class Finder
             return chatController;
         }
     }
+
+    public static Person ClosestPerson = null;
 }

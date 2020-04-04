@@ -2,10 +2,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour 
 {
-    private Person closestPerson = null;
     private float closestPersonDistance = 100f;
     private const float mouseRotationAdjustment = 10f;
-    private float pitch;
     private float yaw;
     [SerializeField] private float maxDistanceFromPersonToPerformAction = 10f;
     [SerializeField] private float mouseSensitivity = 1.0f;
@@ -16,10 +14,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private KeyCode rightSideKey = KeyCode.D;
     void FixedUpdate()
     {
-        FindClosestPerson();
         Move();
         Rotate();
-        PerformActions();
+        if(CanPerformActions())
+            PerformActions();
     }
 
     private void Move() 
@@ -37,11 +35,7 @@ public class PlayerController : MonoBehaviour
 
     private void Rotate()
     {
-        pitch += mouseSensitivity * mouseRotationAdjustment * -Input.GetAxis("Mouse Y");
         yaw += mouseSensitivity * mouseRotationAdjustment * Input.GetAxis("Mouse X");
-       
-        // Clamp pitch:
-        pitch = Mathf.Clamp(pitch, -90f, 90f);
        
         // Wrap yaw:
         while (yaw < 0f) {
@@ -52,53 +46,48 @@ public class PlayerController : MonoBehaviour
         }
        
         // Set orientation:
-        transform.eulerAngles = new Vector3(pitch, yaw, 0f);
+        transform.eulerAngles = new Vector3(0f, yaw, 0f);
     }
 
     private void PerformActions() 
     {
-        if(closestPerson != null) 
+        if(Finder.ClosestPerson != null) 
         {
             if(Input.GetKeyUp(KeyCode.Mouse0)) PerformLeftClick();
             if(Input.GetKeyUp(KeyCode.Mouse1)) PerformRightClick();
+        }
+        else 
+        {
+            Finder.ChatController.ClearQueue();
         }
     }
 
     private void PerformLeftClick() 
     {
-        Say("Hey, I need some info...");
-        closestPerson.OnChat();
+        SayAndClear("Hey, I have this letter, but I can't read it, could you tell me what it says?");
+        Finder.ClosestPerson.OnFirstChat();
+        Say("I'm not very good at noticing details, can you tell me some about yourself?");
+        Finder.ClosestPerson.OnSecondChat();
     }
 
     private void PerformRightClick() 
     {
-        Say("Smooch!");
-        closestPerson.OnKiss();
+        SayAndClear("Smooch!");
+        Finder.ClosestPerson.OnKiss();
     }
 
-    private void FindClosestPerson() 
-    {
-        Vector3 initialPosition = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
-        RaycastHit potentialPerson;
-        // Does the ray intersect any objects excluding the player layer
-        if (Physics.Raycast(initialPosition, transform.TransformDirection(Vector3.forward), out potentialPerson))
-        {
-            Debug.DrawRay(initialPosition, transform.TransformDirection(Vector3.forward) * potentialPerson.distance, Color.yellow);
-            Person person = potentialPerson.transform.gameObject.GetComponent<Person>();
-            if(person != null)
-            {
-                closestPerson = person;
-            }
-        }
-        else 
-        {
-            Debug.DrawRay(initialPosition, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
-        }
-    }
-
-    private void Say(string messageText) 
+    private void SayAndClear(string messageText) 
     {
         Finder.ChatController.ClearQueue();
+        Say(messageText);
+    }
+    private void Say(string messageText) 
+    {
         Finder.ChatController.QueueMessage(new Message(this.gameObject.name, messageText, 4f));
+    }
+
+    private bool CanPerformActions() 
+    {
+        return !Finder.GameController.GameEnded;
     }
 }
