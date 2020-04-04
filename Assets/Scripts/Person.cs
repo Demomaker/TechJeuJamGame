@@ -15,13 +15,14 @@ public class Person : MonoBehaviour
 
     private void RevealMessagePart()
     {
-        Debug.Log(LetterPart);
+        Say(LetterPart);
     }
 
     public void OnKiss() 
     {
         if(personIsTheChosenOne)
         {
+            Say("You Won My Heart <3");
             Finder.OnWinEventChannel.Publish();
         }
         else 
@@ -32,7 +33,12 @@ public class Person : MonoBehaviour
 
     private void Slap()
     {
-        Debug.Log("NOT COOL MAN! ***SLAP***");
+        Say("Not COOL MAN! ***SLAP***");
+    }
+
+    private void Say(string messageText) 
+    {
+        Finder.ChatController.QueueMessage(new Message(this.gameObject.name, messageText, 20f));
     }
 }
 

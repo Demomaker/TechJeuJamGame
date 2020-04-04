@@ -66,26 +66,33 @@ public class PlayerController : MonoBehaviour
 
     private void PerformLeftClick() 
     {
+        Say("Hey, I need some info...");
         closestPerson.OnChat();
     }
 
     private void PerformRightClick() 
     {
+        Say("Smooch!");
         closestPerson.OnKiss();
     }
 
     private void FindClosestPerson() 
     {
-        Person[] people = Finder.GameController.People;
-        Person closest = people[0];
-        for(int i = 0; i < people.Length; i++)
+        RaycastHit potentialPerson;
+        // Does the ray intersect any objects excluding the player layer
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out potentialPerson))
         {
-            if(Vector3.Distance(this.transform.position, closest.transform.position) > Vector3.Distance(this.transform.position, people[i].transform.position))
+            Person person = potentialPerson.transform.gameObject.GetComponent<Person>();
+            if(person != null)
             {
-                closest = people[i];
+                closestPerson = person;
             }
         }
-        closestPersonDistance = Vector3.Distance(this.transform.position, closest.transform.position);
-        closestPerson = closest;
+    }
+
+    private void Say(string messageText) 
+    {
+        Finder.ChatController.ClearQueue();
+        Finder.ChatController.QueueMessage(new Message(this.gameObject.name, messageText, 4f));
     }
 }
