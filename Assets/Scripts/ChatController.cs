@@ -24,6 +24,7 @@ public class ChatController : MonoBehaviour
     /// </summary>
     void OnDestroy()
     {
+        if(messageCoroutine != null)
         StopCoroutine(messageCoroutine);
     }
     public void QueueMessage(Message message) 

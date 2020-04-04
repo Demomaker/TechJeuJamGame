@@ -57,11 +57,11 @@ public class PlayerController : MonoBehaviour
 
     private void PerformActions() 
     {
-        //if(maxDistanceFromPersonToPerformAction < closestPersonDistance) 
-        //{
+        if(closestPerson != null) 
+        {
             if(Input.GetKeyUp(KeyCode.Mouse0)) PerformLeftClick();
             if(Input.GetKeyUp(KeyCode.Mouse1)) PerformRightClick();
-        //}
+        }
     }
 
     private void PerformLeftClick() 
@@ -78,15 +78,21 @@ public class PlayerController : MonoBehaviour
 
     private void FindClosestPerson() 
     {
+        Vector3 initialPosition = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
         RaycastHit potentialPerson;
         // Does the ray intersect any objects excluding the player layer
-        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out potentialPerson))
+        if (Physics.Raycast(initialPosition, transform.TransformDirection(Vector3.forward), out potentialPerson))
         {
+            Debug.DrawRay(initialPosition, transform.TransformDirection(Vector3.forward) * potentialPerson.distance, Color.yellow);
             Person person = potentialPerson.transform.gameObject.GetComponent<Person>();
             if(person != null)
             {
                 closestPerson = person;
             }
+        }
+        else 
+        {
+            Debug.DrawRay(initialPosition, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
         }
     }
 
