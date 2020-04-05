@@ -1,27 +1,66 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class GameController : MonoBehaviour 
+public class GameController : MonoBehaviour
 {
     private Person currentPersonToFind = null;
     private string letter = "";
     private bool gameEnded = false;
     private Coroutine currentCoroutine = null;
+    private List<string> names = new List<string>()
+    {
+        "Myrna",
+        "Gertude",
+        "Benita",
+        "Criselda",
+        "Pamila",
+        "Pamula" ,
+        "Beverlee",
+        "Wendie" ,
+        "Arianna" ,
+        "Kimiko" ,
+        "Mandy" ,
+        "Tatiana" ,
+        "Tamika" ,
+        "Genoveva" ,
+        "Rolande" ,
+        "Danette" ,
+        "Marni" ,
+        "Violet" ,
+        "Renita" ,
+        "Aurora" ,
+        "Marth" ,
+        "Akiko" ,
+        "Jane" ,
+        "Latia" ,
+        "Joanna" ,
+        "Inga" ,
+        "Thomasina",
+        "Flo" ,
+        "Isabella" ,
+        "Britney"
+    };
+
+    private List<GameObject> peopleGameObjects = new List<GameObject>();
     [SerializeField] private Vector3 startingPosition;
-    [SerializeField] private Person[] people;
     [SerializeField] private GameObject player;
     [SerializeField] private GameObject initialLetter;
+    [SerializeField] private AudioClip slapSoundEffect;
+    [SerializeField] private Transform[] spawnPoints;
+    [SerializeField] private GameObject[] peoplePrefabs;
 
-    public Person CurrentPersonToFind { get{ return currentPersonToFind;}}
-    public Person[] People { get {return people;}}
+    public Person CurrentPersonToFind { get { return currentPersonToFind; } }
+    public Person[] People => GetPeoplePersons();
     public bool GameEnded => gameEnded;
+    public AudioClip SlapSoundEffect => slapSoundEffect;
 
     /// <summary>
     /// This function is called when the object becomes enabled and active.
     /// </summary>
-    void OnEnable() 
+    void OnEnable()
     {
         Finder.OnWinEventChannel.Notify += OnWin;
         Finder.OnLossEventChannel.Notify += OnLoss;
@@ -30,101 +69,147 @@ public class GameController : MonoBehaviour
     /// <summary>
     /// This function is called when the behaviour becomes disabled or inactive.
     /// </summary>
-    void OnDisable() 
+    void OnDisable()
     {
         Finder.OnWinEventChannel.Notify -= OnWin;
         Finder.OnLossEventChannel.Notify -= OnLoss;
     }
 
-    /// <summary>
-    /// Start is called on the frame when a script is enabled just before
-    /// any of the Update methods is called the first time.
-    /// </summary>
-    void Start()
-    {
-        NewMatch();
-    }
-
-    private void OnWin() 
+    private void OnWin()
     {
         StartCoroutine(FinalizeWinAndStartNewMatch());
     }
 
-    private void OnLoss() 
+    private void OnLoss()
     {
         StartCoroutine(FinalizeLossAndStartNewMatch());
     }
 
-    private IEnumerator FinalizeWinAndStartNewMatch() 
+    private Person[] GetPeoplePersons() 
+    {
+        List<Person> persons = new List<Person>();
+        Person person = null;
+        for(int i = 0; i < peopleGameObjects.Count; i++)
+        {
+            person = peopleGameObjects[i].GetComponent<Person>();
+            if(person != null) persons.Add(person);
+        }
+        return persons.ToArray();
+    }
+
+    private IEnumerator FinalizeWinAndStartNewMatch()
     {
         gameEnded = true;
-        foreach(Person person in people) person.ExpressJealousy();
+        foreach (Person person in People) person.ExpressJealousy();
         yield return new WaitForSeconds(10f);
         NewMatch();
         gameEnded = false;
     }
 
-    private void Say(string personName, string messageText) 
+    private void Say(string personName, string messageText)
     {
         Finder.ChatController.QueueMessage(new Message(personName, messageText, 5f));
     }
 
-    private IEnumerator FinalizeLossAndStartNewMatch() 
+    private IEnumerator FinalizeLossAndStartNewMatch()
     {
-        gameEnded = true; 
+        gameEnded = true;
         string correctGirlName = GameObject.FindObjectsOfType<Person>().Where(obj => obj.GetComponent<Person>() == CurrentPersonToFind).First().gameObject.name;
-        //CurrentPersonToFind.transform.position = new Vector3(player.transform.position.x - 4, player.transform.position.y + 10, player.transform.position.z - 4);
         Say(correctGirlName, "YOU MONSTER! HOW COULD YOU NOT NOTICE IT WAS ME ALL ALONG?!?!?");
         yield return new WaitForSeconds(16f);
         NewMatch();
         gameEnded = false;
     }
 
-    private void NewMatch() 
+    public void NewMatch()
     {
-        if(currentCoroutine != null)
-            StopCoroutine(currentCoroutine);
-        currentCoroutine = StartCoroutine(ShowInitialLetterCoroutine());
-        ResetCharacterPositions();
+        for(int i = peopleGameObjects.Count - 1; i >= 0; i--) 
+        {
+            Destroy(peopleGameObjects[i]);
+        }
+        peopleGameObjects.Clear();
+        ChoosePeopleGameObjects();
+        GeneratePeopleTraits();
+        PlacePeople();
         ChoosePerson();
         WriteLetter();
         SeperateLetterIntoPeople();
-    }
-    private void ResetCharacterPositions() 
-    {
         player.transform.position = startingPosition;
-        foreach(Person person in people) 
+        if (currentCoroutine != null)
+            StopCoroutine(currentCoroutine);
+        currentCoroutine = StartCoroutine(ShowInitialLetterCoroutine());
+    }
+
+    private void PlacePeople()
+    {
+        List<Transform> tempSpawnPointList = new List<Transform>(spawnPoints);
+        Transform chosenSpawnPoint = null;
+        for(int i = 0; i < People.Length; i++) 
         {
-            person.ResetPosition();
+            chosenSpawnPoint = tempSpawnPointList[UnityEngine.Random.Range(0, tempSpawnPointList.Count)];
+            People[i].transform.position = chosenSpawnPoint.position;
+            People[i].transform.rotation = chosenSpawnPoint.rotation;
+            tempSpawnPointList.Remove(chosenSpawnPoint);
         }
     }
-    private void ChoosePerson() 
+
+    private void GeneratePeopleTraits()
     {
-        currentPersonToFind = people[Random.Range(0, people.Length)];
+        List<string> tempNames = new List<string>(names);
+        string chosenName = "";
+        foreach(Person person in People) 
+        {
+            person.HairColor = (HairColor) UnityEngine.Random.Range(0, Enum.GetNames(typeof(HairColor)).Length);
+            person.Interest = (Interest) UnityEngine.Random.Range(0, Enum.GetNames(typeof(Interest)).Length);
+            person.Relation = (Relation) UnityEngine.Random.Range(0, Enum.GetNames(typeof(Relation)).Length);
+            person.Language = (Language) UnityEngine.Random.Range(0, Enum.GetNames(typeof(Language)).Length);
+            chosenName = tempNames[UnityEngine.Random.Range(0,tempNames.Count - 1)];
+            person.gameObject.name = chosenName;
+            tempNames.Remove(chosenName);
+        }
     }
 
-    private void WriteLetter() 
+    private void ChoosePeopleGameObjects()
     {
-        letter += "Hello my love! I'm " + currentPersonToFind.Language + ". | My hair is " + currentPersonToFind.HairColor + ". | I like " + currentPersonToFind.Interest + ". | I'm your " + currentPersonToFind.Relation + ". Try to find out who I am by making connections. I love you <3 xoxoxo";
+        List<GameObject> tempPeopleGameObjects = new List<GameObject>();
+        for(int i = 0; i < spawnPoints.Length; i++)
+        {
+            tempPeopleGameObjects.Add(GameObject.Instantiate(peoplePrefabs[UnityEngine.Random.Range(0, peoplePrefabs.Length)]));
+        }
+        peopleGameObjects = tempPeopleGameObjects;
     }
 
-    private void SeperateLetterIntoPeople() 
+    private void ChoosePerson()
     {
-        List<Person> tempPeople = new List<Person>(people);
+        currentPersonToFind = People[UnityEngine.Random.Range(0, People.Length)];
+    }
+
+    private void WriteLetter()
+    {
+        letter = "Hello my love! I'm " + currentPersonToFind.Language + ". | My hair is " + currentPersonToFind.HairColor + ". | I like " + currentPersonToFind.Interest + ". | I'm your " + currentPersonToFind.Relation + ". Try to find out who I am by making connections. I love you <3 xoxoxo";
+    }
+
+    private void SeperateLetterIntoPeople()
+    {
+        List<Person> tempPeople = new List<Person>(People);
         int numberOfPeople = tempPeople.Count;
         string[] letterParts = letter.Split('|');
-        for(int i = 0; i < numberOfPeople; i++)
+        for(int i = 0; i < tempPeople.Count; i++) 
         {
-            Person chosenPerson = tempPeople[Random.Range(0, tempPeople.Count)];
+            tempPeople[i].LetterPart = "";
+        }
+        for (int i = 0; i < letterParts.Length; i++)
+        {
+            Person chosenPerson = tempPeople[UnityEngine.Random.Range(0, tempPeople.Count)];
             chosenPerson.LetterPart = letterParts[i];
             tempPeople.Remove(chosenPerson);
         }
     }
 
-    private IEnumerator ShowInitialLetterCoroutine() 
+    private IEnumerator ShowInitialLetterCoroutine()
     {
         initialLetter.SetActive(true);
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(6f);
         initialLetter.SetActive(false);
     }
 }

@@ -66,7 +66,8 @@ public class Person : MonoBehaviour
 
     private void RevealMessagePart()
     {
-        Say("I can only read some parts of this letter, but from what I can tell, this person said : " + LetterPart);
+        if(LetterPart == "") Say("Sorry, I don't know what this says honestly, better luck with someone else.");
+        else Say("I can only read some parts of this letter, but from what I can tell, this person said : " + LetterPart);
     }
 
     public void OnKiss() 
@@ -85,7 +86,8 @@ public class Person : MonoBehaviour
 
     private void Slap()
     {
-        Say("Not COOL MAN! ***SLAP***");
+        Say("Not Cool, Man!");
+        Finder.OnSoundPlayEventChannel.Publish(this.gameObject, Finder.GameController.SlapSoundEffect);
     }
 
     private void Say(string messageText) 

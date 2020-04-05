@@ -5,6 +5,7 @@ public class PlayerController : MonoBehaviour
     private float closestPersonDistance = 100f;
     private const float mouseRotationAdjustment = 10f;
     private float yaw;
+    [SerializeField] private AudioClip kissSoundEffect;
     [SerializeField] private float maxDistanceFromPersonToPerformAction = 10f;
     [SerializeField] private float mouseSensitivity = 1.0f;
 
@@ -72,7 +73,8 @@ public class PlayerController : MonoBehaviour
 
     private void PerformRightClick() 
     {
-        SayAndClear("Smooch!");
+        Finder.ChatController.ClearQueue();
+        Finder.OnSoundPlayEventChannel.Publish(this.gameObject, kissSoundEffect);
         Finder.ClosestPerson.OnKiss();
     }
 
