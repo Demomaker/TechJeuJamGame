@@ -6,8 +6,17 @@ public class SceneController : MonoBehaviour
 {
     private bool alreadyPressed = false;
     [SerializeField] private KeyCode menuKey = KeyCode.Escape;
-    [SerializeField] private Object mainScene;
-    [SerializeField] private Object menuScene;
+    [SerializeField] private string mainSceneName;
+    [SerializeField] private string menuSceneName;
+
+    /// <summary>
+    /// Awake is called when the script instance is being loaded.
+    /// </summary>
+    void Awake()
+    {
+        StartCoroutine(GoToMainMenuScene());
+    }
+
     /// <summary>
     /// This function is called when the object becomes enabled and active.
     /// </summary>
@@ -43,18 +52,21 @@ public class SceneController : MonoBehaviour
 
     public IEnumerator GoToMainSceneCoroutine() 
     {
-        SceneManager.LoadScene(mainScene.name, LoadSceneMode.Additive);
+        SceneManager.LoadScene(mainSceneName, LoadSceneMode.Additive);
         yield return null;
-        SceneManager.UnloadScene(menuScene.name);
-        SceneManager.SetActiveScene(SceneManager.GetSceneByName(mainScene.name));
+        if(SceneManager.GetSceneByName(menuSceneName).isLoaded)
+            SceneManager.UnloadScene(menuSceneName);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(mainSceneName));
         Finder.GameController.NewMatch();
     }
 
     public IEnumerator GoToMainMenuScene() 
     {
-        SceneManager.LoadScene(menuScene.name, LoadSceneMode.Additive);
+        SceneManager.LoadScene(menuSceneName, LoadSceneMode.Additive);
         yield return null;
-        SceneManager.UnloadScene(mainScene.name);
+        if(SceneManager.GetSceneByName(mainSceneName).isLoaded)
+            SceneManager.UnloadScene(mainSceneName);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(menuSceneName));
         alreadyPressed = false;
     }
 

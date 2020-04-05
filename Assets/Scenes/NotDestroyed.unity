@@ -404,8 +404,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   menuKey: 27
-  mainScene: {fileID: 102900000, guid: 39b9453a29916f245aca0ab057fcbf34, type: 3}
-  menuScene: {fileID: 102900000, guid: 7849d2236f49ace4cabce596db0a80fa, type: 3}
+  mainSceneName: Main
+  menuSceneName: MainMenu
 --- !u!1 &1958169960
 GameObject:
   m_ObjectHideFlags: 0
