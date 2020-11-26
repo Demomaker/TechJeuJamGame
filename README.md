@@ -1,5 +1,6 @@
 # The Connecting
-
+![GitHub license](https://img.shields.io/github/license/Demomaker/TheConnectingGame?style=plastic)
+![GitHub all releases](https://img.shields.io/github/downloads/Demomaker/TheConnectingGame/total?style=plastic)
 ## EN
 
 Game made in the [TechJeuJam Game Jam](https://itch.io/jam/techjeux) organized by many students from my cégep program.
