@@ -11,6 +11,8 @@ The Game Jam theme was "Connections".
 
 You can view more information [here](https://demomaker.itch.io/theconnecting)
 
+Gameplay Video : https://youtu.be/qOPjp9ZK1gY
+
 ## FR
 
 Un jeu créé pour un Game Jam organisé par plusieurs étudiants de ma technique du cégep : le [TechJeuJam Game Jam](https://itch.io/jam/techjeux). 
@@ -20,3 +22,5 @@ Dans ce jeu, tu es une personne qui essaie de trouver son aimant après avoir re
 Le thème du Game Jam était "Connections". 
 
 Vous pouvez voir plus d'informations [ici](https://demomaker.itch.io/theconnecting)
+
+Vidéo Gameplay : https://youtu.be/qOPjp9ZK1gY
